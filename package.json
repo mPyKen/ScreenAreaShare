@@ -3,6 +3,9 @@
   "productName": "screen-area-share",
   "version": "1.0.0",
   "description": "Share part of your screen on e.g. Teams",
+  "author": {
+    "name": "github.com/mPyKen"
+  },
   "main": "src/index.js",
   "scripts": {
     "start": "electron-forge start",
