@@ -11,7 +11,8 @@ The rendering window displays the content of that area. In applications such as 
 You can download the executable for windows form the Releases page.
 ### Via Source Code
 1. Clone or download the source code.
-2. Either run directly or build an executable.
+2. Run `npm install`
+3. Either run directly or build an executable.
     1. Source: run `npm start`.
     2. Build executable: run `npm run make`.  
     Execute the built .exe file in the `out/` folder.
