@@ -14,6 +14,20 @@ ipcMain.on("set-ignore-mouse-events", (event, ...args) => {
   BrowserWindow.fromWebContents(event.sender).setIgnoreMouseEvents(...args);
 });
 
+const freeze = app.commandLine.hasSwitch('freeze')
+const initCapRect = {
+  x: app.commandLine.hasSwitch('cx') ? parseInt(app.commandLine.getSwitchValue('cx')) : null,
+  y: app.commandLine.hasSwitch('cy') ? parseInt(app.commandLine.getSwitchValue('cy')) : null,
+  width: app.commandLine.hasSwitch('cw') ? parseInt(app.commandLine.getSwitchValue('cw')) : 1280,
+  height: app.commandLine.hasSwitch('ch') ? parseInt(app.commandLine.getSwitchValue('ch')) : 720,
+}
+const initRenderRect = {
+  x: app.commandLine.hasSwitch('rx') ? parseInt(app.commandLine.getSwitchValue('rx')) : null,
+  y: app.commandLine.hasSwitch('ry') ? parseInt(app.commandLine.getSwitchValue('ry')) : null,
+  width: app.commandLine.hasSwitch('rw') ? parseInt(app.commandLine.getSwitchValue('rw')) : 1280,
+  height: app.commandLine.hasSwitch('rh') ? parseInt(app.commandLine.getSwitchValue('rh')) : 720,
+}
+
 function checkWindowBounds(win) {
   const rect = win.getBounds();
   const dbounds = screen.getDisplayMatching(rect).bounds;
@@ -32,12 +46,13 @@ const createWindows = () => {
       contextIsolation: false,
       enableRemoteModule: true,
     },
-    width: 1280,
-    height: 720,
+    width: initCapRect.width,
+    height: initCapRect.height,
     frame: false,
     autoHideMenuBar: true,
     resizable: false,
   });
+  mainWindow.setPosition(initRenderRect.x ?? mainWindow.getPosition()[0], initRenderRect.y ?? mainWindow.getPosition()[1])
   mainWindow.loadFile(path.join(__dirname, "render.html"));
   mainWindow.on("closed", () => app.quit());
   //mainWindow.setMenuBarVisibility(false)
@@ -62,16 +77,19 @@ const createWindows = () => {
       contextIsolation: false,
       enableRemoteModule: true,
     },
-    width: 1280,
-    height: 720,
+    width: initCapRect.width,
+    height: initCapRect.height,
     transparent: true,
     frame: false,
+    opacity: freeze? 0 : 0.6
   });
+  captureWindow.setPosition(initCapRect.x ?? captureWindow.getPosition()[0], initCapRect.y ?? captureWindow.getPosition()[1])
   captureWindow.loadFile(path.join(__dirname, "capture.html"));
   captureWindow.setContentProtection(true); // exclude from capture
   captureWindow.setAlwaysOnTop(true);
   captureWindow.setFocusable(false);
   captureWindow.on("closed", () => app.quit());
+  captureWindow.setIgnoreMouseEvents(freeze)
   //captureWindow.webContents.openDevTools();
 
   captureWindow.on("resized", (event) => {
