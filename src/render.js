@@ -49,13 +49,13 @@ ipcRenderer.on("update-capture-area", (event, pos, dim) => {
   }
 });
 
-ipcRenderer.on("window-move", (event, pos) => {
-  maskElement.style.marginLeft = pos[0] + "px";
-  maskElement.style.marginTop = pos[1] + "px";
+ipcRenderer.on("window-move", (event, rect) => {
+  maskElement.style.marginLeft = rect.x + "px";
+  maskElement.style.marginTop = rect.y + "px";
 });
-ipcRenderer.on("window-resize", (event, dim) => {
-  maskElement.style.width = dim[0] + "px";
-  maskElement.style.height = dim[1] + "px";
+ipcRenderer.on("window-resize", (event, rect) => {
+  maskElement.style.width = rect.width + "px";
+  maskElement.style.height = rect.height + "px";
 });
 ipcRenderer.on("window-focus", (event) => {
   cons.log("focus");

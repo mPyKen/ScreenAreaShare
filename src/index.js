@@ -10,14 +10,23 @@ if (require("electron-squirrel-startup")) {
   app.quit();
 }
 
-let mainWindow;
 ipcMain.on("set-ignore-mouse-events", (event, ...args) => {
   BrowserWindow.fromWebContents(event.sender).setIgnoreMouseEvents(...args);
 });
 
+function checkWindowBounds(win) {
+  const rect = win.getBounds();
+  const dbounds = screen.getDisplayMatching(rect).bounds;
+  rect.x = Math.max(rect.x, dbounds.x);
+  rect.y = Math.max(rect.y, dbounds.y);
+  rect.x = Math.min(rect.x, dbounds.x + dbounds.width - rect.width);
+  rect.y = Math.min(rect.y, dbounds.y + dbounds.height - rect.height);
+  win.setBounds(rect);
+}
+
 const createWindows = () => {
   // Create the browser window.
-  mainWindow = new BrowserWindow({
+  const mainWindow = new BrowserWindow({
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: false,
@@ -37,13 +46,14 @@ const createWindows = () => {
   mainWindow.on("focus", (event) => mainWindow.send("window-focus"));
   mainWindow.on("blur", (event) => mainWindow.send("window-blur"));
   mainWindow.on("resize", (event) =>
-    mainWindow.send("window-resize", mainWindow.getSize())
+    mainWindow.send("window-resize", mainWindow.getBounds())
   );
   mainWindow.on("move", (event) =>
-    mainWindow.send("window-move", mainWindow.getPosition())
+    mainWindow.send("window-move", mainWindow.getBounds())
   );
-  mainWindow.send("window-resize", mainWindow.getSize());
-  mainWindow.send("window-move", mainWindow.getPosition());
+  mainWindow.send("window-resize", mainWindow.getBounds());
+  mainWindow.send("window-move", mainWindow.getBounds());
+  mainWindow.on("moved", (event) => checkWindowBounds(mainWindow));
 
   // capture window
   const captureWindow = new BrowserWindow({
@@ -64,6 +74,19 @@ const createWindows = () => {
   captureWindow.on("closed", () => app.quit());
   //captureWindow.webContents.openDevTools();
 
+  captureWindow.on("resized", (event) => {
+    checkWindowBounds(mainWindow);
+    checkWindowBounds(captureWindow);
+  });
+  captureWindow.on("moved", (event) => checkWindowBounds(captureWindow));
+  captureWindow.on("resize", (event) =>
+    updateMain(null, captureWindow.getSize())
+  );
+  captureWindow.on("move", (event) =>
+    updateMain(captureWindow.getPosition(), null)
+  );
+  updateMain(captureWindow.getPosition(), captureWindow.getSize());
+
   function updateMain(pos, dim) {
     if (dim) {
       mainWindow.resizable = true;
@@ -72,13 +95,6 @@ const createWindows = () => {
     }
     mainWindow.send("update-capture-area", pos, dim);
   }
-  captureWindow.on("resize", (event) =>
-    updateMain(null, captureWindow.getSize())
-  );
-  captureWindow.on("move", (event) =>
-    updateMain(captureWindow.getPosition(), null)
-  );
-  updateMain(captureWindow.getPosition(), captureWindow.getSize());
 };
 
 // This method will be called when Electron has finished
