@@ -45,6 +45,7 @@ const createWindows = () => {
       nodeIntegration: true,
       contextIsolation: false,
       enableRemoteModule: true,
+      backgroundThrottling: false // continue playing <video> element https://stackoverflow.com/a/68685080
     },
     width: initCapRect.width,
     height: initCapRect.height,
