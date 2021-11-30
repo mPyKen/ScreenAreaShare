@@ -20,3 +20,12 @@ You can download the executable for windows form the Releases page.
 ## Usage
 1. Two windows should open: One border-window and one rendering window. These two windows can be moved via a drag-drop. The red borders can be resized.
 2. With both windows open, start the sharing function of the application of your choice (e.g. Teams) by selecting the option to share a window. Select this application.
+
+## Command Line Parameters
+|Parameter|Description|
+|-|-|
+|`--freeze`|Hide capturing window|
+|`--consider-scale`|Considers scale settings of the screen|
+|`--cx=<x>`, `--cy=<y>`|Initial top left coordinate of the capturing window|
+|`--cw=<w>`, `--ch=<h>`|Initial width and height of the capturing window|
+|`--rx=<x>`, `--ry=<y>`|Initial top left coordinate of the rendering window|
