@@ -10,6 +10,13 @@ if (require("electron-squirrel-startup")) {
   app.quit();
 }
 
+// ignore dpi scaling as per https://stackoverflow.com/a/57924406
+const considerScale = app.commandLine.hasSwitch('consider-scale')
+if (!considerScale) {
+  app.commandLine.appendSwitch('high-dpi-support', 1)
+  app.commandLine.appendSwitch('force-device-scale-factor', 1)
+}
+
 ipcMain.on("set-ignore-mouse-events", (event, ...args) => {
   BrowserWindow.fromWebContents(event.sender).setIgnoreMouseEvents(...args);
 });
