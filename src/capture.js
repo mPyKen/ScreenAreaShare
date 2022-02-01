@@ -9,9 +9,9 @@ const { ipcRenderer } = require("electron");
 const inner = document.getElementsByClassName("inner")[0];
 inner.addEventListener("mouseenter", () => {
   ipcRenderer.send("set-ignore-mouse-events", true, { forward: true });
-  cons.log(`mouseenter, ignore: true`);
+  // cons.log(`mouseenter, ignore: true`);
 });
 inner.addEventListener("mouseleave", () => {
   ipcRenderer.send("set-ignore-mouse-events", false);
-  cons.log(`mouseleave, ignore: false`);
+  // cons.log(`mouseleave, ignore: false`);
 });

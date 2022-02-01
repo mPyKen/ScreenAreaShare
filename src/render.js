@@ -9,39 +9,59 @@ const maskElement = document.getElementsByClassName("mask")[0];
 
 const { desktopCapturer, ipcRenderer, app } = require("electron");
 
-async function getVideoSources() {
+async function getVideoSources(display) {
   const inputSources = await desktopCapturer.getSources({
-    //types: ['window', 'screen']
     types: ["screen"],
   });
 
-  cons.log(inputSources);
-  selectSource(inputSources[0]);
+  cons.log(`find display ${display.id.toString()} @ ${JSON.stringify(display.bounds)}`)
+  inputSources.map(is => cons.log(`  ${is.id}, ${is.name}: ${is.display_id}`))
+  await selectSource(inputSources.filter(is => is.display_id === display.id.toString())[0], display);
 }
 
-async function selectSource(source) {
+async function selectSource(source, display) {
   const constraints = {
     audio: false,
     video: {
       mandatory: {
         chromeMediaSource: "desktop",
         chromeMediaSourceId: source.id,
+        minWidth: display.bounds.width,
+        minHeight: display.bounds.height,
       },
     },
   };
   const stream = await navigator.mediaDevices.getUserMedia(constraints);
+  setTimeout(() => {
+    cons.log('stream info:')
+    stream.getVideoTracks().map(track => {
+      const s = track.getSettings()
+      cons.log(`  ${s.deviceId}: ${s.width}x${s.height}`)
+    })
+  }, 100)
   videoElement.srcObject = stream;
   videoElement.play();
 }
 
-getVideoSources();
-//selectSource(0)
-
+let currentDisplay = null
+let dispx = 0
+let dispy = 0
+ipcRenderer.on("update-screen-to-capture", async (event, display) => {
+  cons.log(`>> update display: ${display.id}`)
+  if (!currentDisplay || display.id !== currentDisplay.id) {
+    currentDisplay = display
+    const {x: x, y: y} = currentDisplay.bounds
+    dispx = x ?? dispx
+    dispy = y ?? dispy
+    await getVideoSources(display)
+    ipcRenderer.send('update-main')
+  }
+})
 ipcRenderer.on("update-capture-area", (event, pos, dim) => {
   //console.log(pos, dim)
   if (pos) {
-    marginElement.style.left = -pos[0] + "px";
-    marginElement.style.top = -pos[1] + "px";
+    marginElement.style.left = (dispx-pos[0]) + "px";
+    marginElement.style.top = (dispy-pos[1]) + "px";
   }
   if (dim) {
     cropElement.style.width = dim[0] + "px";
@@ -50,19 +70,19 @@ ipcRenderer.on("update-capture-area", (event, pos, dim) => {
 });
 
 ipcRenderer.on("window-move", (event, rect) => {
-  maskElement.style.marginLeft = rect.x + "px";
-  maskElement.style.marginTop = rect.y + "px";
+  maskElement.style.marginLeft = (rect.x-dispx) + "px";
+  maskElement.style.marginTop = (rect.y-dispy) + "px";
 });
 ipcRenderer.on("window-resize", (event, rect) => {
   maskElement.style.width = rect.width + "px";
   maskElement.style.height = rect.height + "px";
 });
 ipcRenderer.on("window-focus", (event) => {
-  cons.log("focus");
+  // cons.log("focus");
   maskElement.style.display = "block";
 });
 ipcRenderer.on("window-blur", (event) => {
-  cons.log("blur");
+  // cons.log("blur");
   maskElement.style.display = "none";
 });
 

@@ -87,7 +87,7 @@ const createWindows = () => {
     },
     width: initCapRect.width,
     height: initCapRect.height,
-    transparent: true,
+    transparent: true, // fancyzones only resizes non-transparent windows
     frame: false,
     opacity: freeze? 0 : 0.6
   });
@@ -95,7 +95,7 @@ const createWindows = () => {
   captureWindow.loadFile(path.join(__dirname, "capture.html"));
   captureWindow.setContentProtection(true); // exclude from capture
   captureWindow.setAlwaysOnTop(true);
-  captureWindow.setFocusable(false);
+  captureWindow.setFocusable(false);  // fancyzones wants windows to be focusable
   captureWindow.on("closed", () => app.quit());
   captureWindow.setIgnoreMouseEvents(freeze)
   //captureWindow.webContents.openDevTools();
@@ -103,16 +103,27 @@ const createWindows = () => {
   captureWindow.on("resized", (event) => {
     checkWindowBounds(mainWindow);
     checkWindowBounds(captureWindow);
+    determineScreenToCapture();
   });
-  captureWindow.on("moved", (event) => checkWindowBounds(captureWindow));
+  captureWindow.on("moved", (event) => {checkWindowBounds(captureWindow); determineScreenToCapture(); });
   captureWindow.on("resize", (event) =>
     updateMain(null, captureWindow.getSize())
   );
   captureWindow.on("move", (event) =>
     updateMain(captureWindow.getPosition(), null)
   );
-  updateMain(captureWindow.getPosition(), captureWindow.getSize());
 
+  // determineScreenToCapture calls update-main at the end
+  mainWindow.webContents.once('dom-ready', determineScreenToCapture);
+  ipcMain.on("update-main", (event, ...args) => {
+    updateMain(captureWindow.getPosition(), captureWindow.getSize());
+  });
+
+  function determineScreenToCapture() {
+    const rect = captureWindow.getBounds();
+    const display = screen.getDisplayMatching(rect);
+    mainWindow.send("update-screen-to-capture", display);
+  }
   function updateMain(pos, dim) {
     if (dim) {
       mainWindow.resizable = true;
