@@ -4,12 +4,6 @@ let cons = new nodeConsole.Console(process.stdout, process.stderr);
 const { app, BrowserWindow, screen, ipcMain } = require("electron");
 const path = require("path");
 
-// Handle creating/removing shortcuts on Windows when installing/uninstalling.
-if (require("electron-squirrel-startup")) {
-  // eslint-disable-line global-require
-  app.quit();
-}
-
 // ignore dpi scaling as per https://stackoverflow.com/a/57924406
 const considerScale = app.commandLine.hasSwitch('consider-scale')
 if (!considerScale) {
