@@ -17,11 +17,14 @@
   "license": "MIT",
   "dependencies": {},
   "devDependencies": {
-    "electron-builder": "^22.14.13",
+      "electron-builder": "^23.0.2",
     "electron": "^12.2.3"
   },
   "build": {
     "productName": "ScreenAreaShare",
+    "mac": {
+      "target": "dmg"
+    },
     "win": {
       "target": [
         "portable"
