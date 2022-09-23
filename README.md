@@ -1,3 +1,5 @@
+[![Build](https://github.com/mPyKen/ScreenAreaShare/actions/workflows/build.yml/badge.svg)](https://github.com/mPyKen/ScreenAreaShare/actions/workflows/build.yml)
+
 # ScreenAreaShare
 
 ScreenAreaShare allows sharing selected area of the screen in applications that do not natively support this feature such as Teams.
