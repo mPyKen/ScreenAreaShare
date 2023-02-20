@@ -10,7 +10,7 @@ The rendering window displays the content of that area. In applications such as 
 
 ## How To Run
 ### Via Release
-You can download the executable for windows form the Releases page.
+You can download the executable for windows from the [Releases page](https://github.com/mPyKen/ScreenAreaShare/releases).
 ### Via Source Code
 1. Clone or download the source code.
 2. Run `npm install`
