@@ -1,4 +1,7 @@
+[![Github All Releases](https://img.shields.io/github/license/mPyKen/ScreenAreaShare)](https://github.com/mPyKen/ScreenAreaShare)
 [![Build](https://github.com/mPyKen/ScreenAreaShare/actions/workflows/build.yml/badge.svg)](https://github.com/mPyKen/ScreenAreaShare/actions/workflows/build.yml)
+[![Github All Releases](https://img.shields.io/github/v/release/mPyKen/ScreenAreaShare)](https://github.com/mPyKen/ScreenAreaShare/releases)
+[![Github All Releases](https://img.shields.io/github/downloads/mPyKen/ScreenAreaShare/total.svg)](https://github.com/mPyKen/ScreenAreaShare/releases)
 
 # ScreenAreaShare
 
