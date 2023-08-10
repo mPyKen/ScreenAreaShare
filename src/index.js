@@ -1,7 +1,7 @@
 var nodeConsole = require("console");
 let cons = new nodeConsole.Console(process.stdout, process.stderr);
 
-const { app, BrowserWindow, screen, ipcMain } = require("electron");
+const { app, BrowserWindow, screen, ipcMain, desktopCapturer } = require("electron");
 const path = require("path");
 
 if (require('electron-squirrel-startup')) return app.quit();
@@ -105,9 +105,11 @@ const createWindows = () => {
   captureWindow.on("resize", (event) =>
     updateMain(null, captureWindow.getSize())
   );
-  captureWindow.on("move", (event) =>
-    updateMain(captureWindow.getPosition(), null)
-  );
+  captureWindow.on("move", (event) => {
+    updateMain(captureWindow.getPosition(), null);
+    checkWindowBounds(captureWindow);
+    determineScreenToCapture();
+  });
 
   // determineScreenToCapture calls update-main at the end
   mainWindow.webContents.once('dom-ready', determineScreenToCapture);
@@ -115,11 +117,53 @@ const createWindows = () => {
     updateMain(captureWindow.getPosition(), captureWindow.getSize());
   });
 
-  function determineScreenToCapture() {
+  async function determineScreenToCapture() {
     const rect = captureWindow.getBounds();
     const display = screen.getDisplayMatching(rect);
-    mainWindow.send("update-screen-to-capture", display);
+    const sourceId = await getVideoSourceIdForDisplay(display);
+    mainWindow.send("update-screen-to-capture", { display, sourceId });
   }
+
+  async function getVideoSourceIdForDisplay(display) {
+    const inputSources = await desktopCapturer.getSources({
+      types: ["screen"],
+    });
+
+    cons.log(
+      `find display ${display.id.toString()} @ ${JSON.stringify(
+        display.bounds
+      )}`
+    );
+    inputSources.map((is) =>
+      cons.log(`  ${is.id}, ${is.name}: ${is.display_id}`)
+    );
+    let source = inputSources.find(
+      (is) => is.display_id === display.id.toString()
+    );
+    if (!source) {
+      // the display_id property doesn't match up - time for plan B
+      // see https://github.com/electron/electron/issues/15111#issuecomment-452346357
+      // Note that this ONLY works if Screen 1 is your primary display; otherwise the list gets reordered
+      const allDisplays = screen.getAllDisplays();
+      const displayIndex = allDisplays.findIndex((d) => d.id === display.id);
+      const sourceName = `Screen ${displayIndex + 1}`;
+      cons.log(
+        "display_id didn't match; Plan B: looking for input source named",
+        sourceName
+      );
+      source = inputSources.find((is) => is.name === sourceName);
+    }
+    if (!source) {
+      throw new Error(
+        `Cannot find source matching display ${
+          display.id
+        }. Candidates: ${JSON.stringify(inputSources, null, 2)}`
+      );
+    }
+
+    return source.id;
+  }
+
   function updateMain(pos, dim) {
     if (dim) {
       mainWindow.resizable = true;
