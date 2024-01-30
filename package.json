@@ -21,31 +21,39 @@
     "electron-squirrel-startup": "^1.0.0"
   },
   "devDependencies": {
-    "nan": "^2.16.0",
-    "@electron-forge/cli": "^6.0.0-beta.65",
-    "@electron-forge/maker-deb": "^6.0.0-beta.65",
-    "@electron-forge/maker-dmg": "^6.0.0-beta.65",
-    "@electron-forge/maker-rpm": "^6.0.0-beta.65",
-    "@electron-forge/maker-squirrel": "^6.0.0-beta.65",
-    "@electron-forge/maker-zip": "^6.0.0-beta.65",
-    "@electron-forge/publisher-github": "^6.0.0-beta.65",
-    "electron": "^25.5.0",
-    "electron-builder": "^23.0.2"
+    "nan": "^2.18.0",
+    "@electron-forge/cli": "7.2.0",
+    "@electron-forge/maker-deb": "7.2.0",
+    "@electron-forge/maker-dmg": "7.2.0",
+    "@electron-forge/maker-rpm": "7.2.0",
+    "@electron-forge/maker-squirrel": "7.2.0",
+    "@electron-forge/maker-zip": "7.2.0",
+    "@electron-forge/publisher-github": "7.2.0",
+    "electron": "^28.2.0",
+    "electron-builder": "^24.9.1"
   },
   "config": {
     "forge": {
       "packagerConfig": {},
       "makers": [
-        { "name": "@electron-forge/maker-squirrel" },
+        {
+          "name": "@electron-forge/maker-squirrel"
+        },
         {
           "name": "@electron-forge/maker-zip",
           "platforms": [
             "darwin"
           ]
         },
-        { "name": "@electron-forge/maker-dmg" },
-        { "name": "@electron-forge/maker-deb" },
-        { "name": "@electron-forge/maker-rpm" }
+        {
+          "name": "@electron-forge/maker-dmg"
+        },
+        {
+          "name": "@electron-forge/maker-deb"
+        },
+        {
+          "name": "@electron-forge/maker-rpm"
+        }
       ],
       "publishers": [
         {
