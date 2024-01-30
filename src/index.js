@@ -1,35 +1,57 @@
 var nodeConsole = require("console");
 let cons = new nodeConsole.Console(process.stdout, process.stderr);
 
-const { app, BrowserWindow, screen, ipcMain, desktopCapturer } = require("electron");
+const {
+  app,
+  BrowserWindow,
+  screen,
+  ipcMain,
+  desktopCapturer,
+} = require("electron");
 const path = require("path");
 
-if (require('electron-squirrel-startup')) return app.quit();
+if (require("electron-squirrel-startup")) return app.quit();
 
 // ignore dpi scaling as per https://stackoverflow.com/a/57924406
-const considerScale = app.commandLine.hasSwitch('consider-scale')
+const considerScale = app.commandLine.hasSwitch("consider-scale");
 if (!considerScale) {
-  app.commandLine.appendSwitch('high-dpi-support', 1)
-  app.commandLine.appendSwitch('force-device-scale-factor', 1)
+  app.commandLine.appendSwitch("high-dpi-support", 1);
+  app.commandLine.appendSwitch("force-device-scale-factor", 1);
 }
 
 ipcMain.on("set-ignore-mouse-events", (event, ...args) => {
   BrowserWindow.fromWebContents(event.sender).setIgnoreMouseEvents(...args);
 });
 
-const freeze = app.commandLine.hasSwitch('freeze')
+const freeze = app.commandLine.hasSwitch("freeze");
 const initCapRect = {
-  x: app.commandLine.hasSwitch('cx') ? parseInt(app.commandLine.getSwitchValue('cx')) : null,
-  y: app.commandLine.hasSwitch('cy') ? parseInt(app.commandLine.getSwitchValue('cy')) : null,
-  width: app.commandLine.hasSwitch('cw') ? parseInt(app.commandLine.getSwitchValue('cw')) : 1280,
-  height: app.commandLine.hasSwitch('ch') ? parseInt(app.commandLine.getSwitchValue('ch')) : 720,
-}
+  x: app.commandLine.hasSwitch("cx")
+    ? parseInt(app.commandLine.getSwitchValue("cx"))
+    : null,
+  y: app.commandLine.hasSwitch("cy")
+    ? parseInt(app.commandLine.getSwitchValue("cy"))
+    : null,
+  width: app.commandLine.hasSwitch("cw")
+    ? parseInt(app.commandLine.getSwitchValue("cw"))
+    : 1280,
+  height: app.commandLine.hasSwitch("ch")
+    ? parseInt(app.commandLine.getSwitchValue("ch"))
+    : 720,
+};
 const initRenderRect = {
-  x: app.commandLine.hasSwitch('rx') ? parseInt(app.commandLine.getSwitchValue('rx')) : null,
-  y: app.commandLine.hasSwitch('ry') ? parseInt(app.commandLine.getSwitchValue('ry')) : null,
-  width: app.commandLine.hasSwitch('rw') ? parseInt(app.commandLine.getSwitchValue('rw')) : 1280,
-  height: app.commandLine.hasSwitch('rh') ? parseInt(app.commandLine.getSwitchValue('rh')) : 720,
-}
+  x: app.commandLine.hasSwitch("rx")
+    ? parseInt(app.commandLine.getSwitchValue("rx"))
+    : null,
+  y: app.commandLine.hasSwitch("ry")
+    ? parseInt(app.commandLine.getSwitchValue("ry"))
+    : null,
+  width: app.commandLine.hasSwitch("rw")
+    ? parseInt(app.commandLine.getSwitchValue("rw"))
+    : 1280,
+  height: app.commandLine.hasSwitch("rh")
+    ? parseInt(app.commandLine.getSwitchValue("rh"))
+    : 720,
+};
 
 function checkWindowBounds(win) {
   const rect = win.getBounds();
@@ -48,7 +70,7 @@ const createWindows = () => {
       nodeIntegration: true,
       contextIsolation: false,
       enableRemoteModule: true,
-      backgroundThrottling: false // continue playing <video> element https://stackoverflow.com/a/68685080
+      backgroundThrottling: false, // continue playing <video> element https://stackoverflow.com/a/68685080
     },
     width: initCapRect.width,
     height: initCapRect.height,
@@ -56,7 +78,10 @@ const createWindows = () => {
     autoHideMenuBar: true,
     resizable: false,
   });
-  mainWindow.setPosition(initRenderRect.x ?? mainWindow.getPosition()[0], initRenderRect.y ?? mainWindow.getPosition()[1])
+  mainWindow.setPosition(
+    initRenderRect.x ?? mainWindow.getPosition()[0],
+    initRenderRect.y ?? mainWindow.getPosition()[1]
+  );
   mainWindow.loadFile(path.join(__dirname, "render.html"));
   mainWindow.on("closed", () => app.quit());
   //mainWindow.setMenuBarVisibility(false)
@@ -85,15 +110,18 @@ const createWindows = () => {
     height: initCapRect.height,
     transparent: true, // fancyzones only resizes non-transparent windows
     frame: false,
-    opacity: freeze? 0 : 0.6
+    opacity: freeze ? 0 : 0.6,
   });
-  captureWindow.setPosition(initCapRect.x ?? captureWindow.getPosition()[0], initCapRect.y ?? captureWindow.getPosition()[1])
+  captureWindow.setPosition(
+    initCapRect.x ?? captureWindow.getPosition()[0],
+    initCapRect.y ?? captureWindow.getPosition()[1]
+  );
   captureWindow.loadFile(path.join(__dirname, "capture.html"));
   captureWindow.setContentProtection(true); // exclude from capture
   captureWindow.setAlwaysOnTop(true);
-  captureWindow.setFocusable(false);  // fancyzones wants windows to be focusable
+  captureWindow.setFocusable(false); // fancyzones wants windows to be focusable
   captureWindow.on("closed", () => app.quit());
-  captureWindow.setIgnoreMouseEvents(freeze)
+  captureWindow.setIgnoreMouseEvents(freeze);
   //captureWindow.webContents.openDevTools();
 
   captureWindow.on("resized", (event) => {
@@ -101,7 +129,10 @@ const createWindows = () => {
     checkWindowBounds(captureWindow);
     determineScreenToCapture();
   });
-  captureWindow.on("moved", (event) => {checkWindowBounds(captureWindow); determineScreenToCapture(); });
+  captureWindow.on("moved", (event) => {
+    checkWindowBounds(captureWindow);
+    determineScreenToCapture();
+  });
   captureWindow.on("resize", (event) =>
     updateMain(null, captureWindow.getSize())
   );
@@ -112,7 +143,7 @@ const createWindows = () => {
   });
 
   // determineScreenToCapture calls update-main at the end
-  mainWindow.webContents.once('dom-ready', determineScreenToCapture);
+  mainWindow.webContents.once("dom-ready", determineScreenToCapture);
   ipcMain.on("update-main", (event, ...args) => {
     updateMain(captureWindow.getPosition(), captureWindow.getSize());
   });
@@ -155,8 +186,7 @@ const createWindows = () => {
     }
     if (!source) {
       throw new Error(
-        `Cannot find source matching display ${
-          display.id
+        `Cannot find source matching display ${display.id
         }. Candidates: ${JSON.stringify(inputSources, null, 2)}`
       );
     }

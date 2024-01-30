@@ -23,35 +23,38 @@ async function selectSource(sourceId, display) {
   };
   const stream = await navigator.mediaDevices.getUserMedia(constraints);
   setTimeout(() => {
-    cons.log('stream info:')
-    stream.getVideoTracks().map(track => {
-      const s = track.getSettings()
-      cons.log(`  ${s.deviceId}: ${s.width}x${s.height}`)
-    })
-  }, 100)
+    cons.log("stream info:");
+    stream.getVideoTracks().map((track) => {
+      const s = track.getSettings();
+      cons.log(`  ${s.deviceId}: ${s.width}x${s.height}`);
+    });
+  }, 100);
   videoElement.srcObject = stream;
   videoElement.play();
 }
 
-let currentDisplay = null
-let dispx = 0
-let dispy = 0
-ipcRenderer.on("update-screen-to-capture",  async (event, { display, sourceId }) => {
-  cons.log(`>> update display: ${display.id}, ${sourceId}`);
-  if (!currentDisplay || display.id !== currentDisplay.id) {
-    currentDisplay = display;
-    const {x: x, y: y} = currentDisplay.bounds
-    dispx = x ?? dispx
-    dispy = y ?? dispy
-    await selectSource(sourceId, display);
-    ipcRenderer.send('update-main')
+let currentDisplay = null;
+let dispx = 0;
+let dispy = 0;
+ipcRenderer.on(
+  "update-screen-to-capture",
+  async (event, { display, sourceId }) => {
+    cons.log(`>> update display: ${display.id}, ${sourceId}`);
+    if (!currentDisplay || display.id !== currentDisplay.id) {
+      currentDisplay = display;
+      const { x: x, y: y } = currentDisplay.bounds;
+      dispx = x ?? dispx;
+      dispy = y ?? dispy;
+      await selectSource(sourceId, display);
+      ipcRenderer.send("update-main");
+    }
   }
-})
+);
 ipcRenderer.on("update-capture-area", (event, pos, dim) => {
   //console.log(pos, dim)
   if (pos) {
-    marginElement.style.left = (dispx-pos[0]) + "px";
-    marginElement.style.top = (dispy-pos[1]) + "px";
+    marginElement.style.left = dispx - pos[0] + "px";
+    marginElement.style.top = dispy - pos[1] + "px";
   }
   if (dim) {
     cropElement.style.width = dim[0] + "px";
@@ -60,8 +63,8 @@ ipcRenderer.on("update-capture-area", (event, pos, dim) => {
 });
 
 ipcRenderer.on("window-move", (event, rect) => {
-  maskElement.style.marginLeft = (rect.x-dispx) + "px";
-  maskElement.style.marginTop = (rect.y-dispy) + "px";
+  maskElement.style.marginLeft = rect.x - dispx + "px";
+  maskElement.style.marginTop = rect.y - dispy + "px";
 });
 ipcRenderer.on("window-resize", (event, rect) => {
   maskElement.style.width = rect.width + "px";
