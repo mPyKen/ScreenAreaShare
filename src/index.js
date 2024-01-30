@@ -136,10 +136,14 @@ const createWindows = () => {
   captureWindow.on("resize", (event) =>
     updateMain(null, captureWindow.getSize())
   );
+  let moveTimer = undefined;
   captureWindow.on("move", (event) => {
+    clearTimeout(moveTimer);
+    moveTimer = setTimeout(() => {
+      checkWindowBounds(captureWindow);
+      determineScreenToCapture();
+    }, 100);
     updateMain(captureWindow.getPosition(), null);
-    checkWindowBounds(captureWindow);
-    determineScreenToCapture();
   });
 
   // determineScreenToCapture calls update-main at the end
@@ -148,11 +152,15 @@ const createWindows = () => {
     updateMain(captureWindow.getPosition(), captureWindow.getSize());
   });
 
+  let currentDisplay = null;
   async function determineScreenToCapture() {
     const rect = captureWindow.getBounds();
     const display = screen.getDisplayMatching(rect);
-    const sourceId = await getVideoSourceIdForDisplay(display);
-    mainWindow.send("update-screen-to-capture", { display, sourceId });
+    if (display?.toString() !== currentDisplay?.id.toString()) {
+      currentDisplay = display;
+      const sourceId = await getVideoSourceIdForDisplay(display);
+      mainWindow.send("update-screen-to-capture", { display, sourceId });
+    }
   }
 
   async function getVideoSourceIdForDisplay(display) {

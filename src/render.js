@@ -33,21 +33,17 @@ async function selectSource(sourceId, display) {
   videoElement.play();
 }
 
-let currentDisplay = null;
 let dispx = 0;
 let dispy = 0;
 ipcRenderer.on(
   "update-screen-to-capture",
   async (event, { display, sourceId }) => {
     cons.log(`>> update display: ${display.id}, ${sourceId}`);
-    if (!currentDisplay || display.id !== currentDisplay.id) {
-      currentDisplay = display;
-      const { x: x, y: y } = currentDisplay.bounds;
-      dispx = x ?? dispx;
-      dispy = y ?? dispy;
-      await selectSource(sourceId, display);
-      ipcRenderer.send("update-main");
-    }
+    const { x: x, y: y } = display.bounds;
+    dispx = x ?? dispx;
+    dispy = y ?? dispy;
+    await selectSource(sourceId, display);
+    ipcRenderer.send("update-main");
   }
 );
 ipcRenderer.on("update-capture-area", (event, pos, dim) => {
