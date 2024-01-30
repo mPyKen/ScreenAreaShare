@@ -7,25 +7,15 @@ const videoElement = document.querySelector("video");
 const marginElement = document.getElementsByClassName("margin")[0];
 const maskElement = document.getElementsByClassName("mask")[0];
 
-const { desktopCapturer, ipcRenderer, app } = require("electron");
+const { ipcRenderer, app } = require("electron");
 
-async function getVideoSources(display) {
-  const inputSources = await desktopCapturer.getSources({
-    types: ["screen"],
-  });
-
-  cons.log(`find display ${display.id.toString()} @ ${JSON.stringify(display.bounds)}`)
-  inputSources.map(is => cons.log(`  ${is.id}, ${is.name}: ${is.display_id}`))
-  await selectSource(inputSources.filter(is => is.display_id === display.id.toString())[0], display);
-}
-
-async function selectSource(source, display) {
+async function selectSource(sourceId, display) {
   const constraints = {
     audio: false,
     video: {
       mandatory: {
         chromeMediaSource: "desktop",
-        chromeMediaSourceId: source.id,
+        chromeMediaSourceId: sourceId,
         minWidth: display.bounds.width,
         minHeight: display.bounds.height,
       },
@@ -46,14 +36,14 @@ async function selectSource(source, display) {
 let currentDisplay = null
 let dispx = 0
 let dispy = 0
-ipcRenderer.on("update-screen-to-capture", async (event, display) => {
-  cons.log(`>> update display: ${display.id}`)
+ipcRenderer.on("update-screen-to-capture",  async (event, { display, sourceId }) => {
+  cons.log(`>> update display: ${display.id}, ${sourceId}`);
   if (!currentDisplay || display.id !== currentDisplay.id) {
-    currentDisplay = display
+    currentDisplay = display;
     const {x: x, y: y} = currentDisplay.bounds
     dispx = x ?? dispx
     dispy = y ?? dispy
-    await getVideoSources(display)
+    await selectSource(sourceId, display);
     ipcRenderer.send('update-main')
   }
 })
