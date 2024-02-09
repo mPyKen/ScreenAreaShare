@@ -27,6 +27,10 @@ jobs:
     - uses: actions/setup-node@master
       with:
         node-version: 18
+    # install python 3.11 as in https://github.com/electron/forge/issues/3371
+    - uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
     - name: install dependencies
       run: npm ci
     - name: publish
