@@ -27,6 +27,9 @@ You can download the executable for windows from the [Releases page](https://git
 2. With both windows open, start the sharing function of the application of your choice (e.g. Teams) by selecting the option to share a window. Select this application.
 
 ## Command Line Parameters
+If you run from source: `npm start -- -- --cx=0 --cy=0 ...` (note the additional `--` required by electron-forge)  
+If you run a prebuilt executable: `path/to/screen-area-share.exe --cx=0 --cy=0 ...`  
+
 |Parameter|Description|
 |-|-|
 |`--freeze`|Hide capturing window|
