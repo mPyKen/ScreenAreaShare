@@ -112,10 +112,14 @@ const createWindows = () => {
     frame: false,
     opacity: freeze ? 0 : 0.6,
   });
+
+  // start by setting initial window location starting at (0,0) and change it
+  // later, when all other settings have been applied
   captureWindow.setPosition(
-    initCapRect.x ?? captureWindow.getPosition()[0],
-    initCapRect.y ?? captureWindow.getPosition()[1]
+    0,
+    0,
   );
+
   captureWindow.loadFile(path.join(__dirname, "capture.html"));
   captureWindow.setContentProtection(true); // exclude from capture
   captureWindow.setAlwaysOnTop(true);
@@ -123,6 +127,14 @@ const createWindows = () => {
   captureWindow.on("closed", () => app.quit());
   captureWindow.setIgnoreMouseEvents(freeze);
   //captureWindow.webContents.openDevTools();
+
+  // now, set the "real" location after all other settings have been done.
+  // hopefully, this eliminates electron's aversity about negative window
+  // coordinates
+  captureWindow.setPosition(
+    initCapRect.x ?? captureWindow.getPosition()[0],
+    initCapRect.y ?? captureWindow.getPosition()[1]
+  );
 
   captureWindow.on("resized", (event) => {
     checkWindowBounds(mainWindow);
