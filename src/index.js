@@ -72,8 +72,8 @@ const createWindows = () => {
       enableRemoteModule: true,
       backgroundThrottling: false, // continue playing <video> element https://stackoverflow.com/a/68685080
     },
-    width: initCapRect.width,
-    height: initCapRect.height,
+    width: initRenderRect.width,
+    height: initRenderRect.height,
     frame: false,
     autoHideMenuBar: true,
     resizable: false,
