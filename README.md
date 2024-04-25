@@ -34,6 +34,7 @@ If you run a prebuilt executable: `path/to/screen-area-share.exe --cx=0 --cy=0 .
 |-|-|
 |`--freeze`|Hide capturing window|
 |`--consider-scale`|Considers scale settings of the screen|
+|`--maxfps=<fps>`|Set maximum frames per second during capture|
 |`--cx=<x>`, `--cy=<y>`|Initial top left coordinate of the capturing window|
 |`--cw=<w>`, `--ch=<h>`|Initial width and height of the capturing window|
 |`--rx=<x>`, `--ry=<y>`|Initial top left coordinate of the rendering window|
