@@ -9,7 +9,7 @@ const maskElement = document.getElementsByClassName("mask")[0];
 
 const { ipcRenderer, app } = require("electron");
 
-async function selectSource(sourceId, display) {
+async function selectSource(sourceId, display, maxFrameRate) {
   const constraints = {
     audio: false,
     video: {
@@ -18,6 +18,7 @@ async function selectSource(sourceId, display) {
         chromeMediaSourceId: sourceId,
         minWidth: display.bounds.width,
         minHeight: display.bounds.height,
+        maxFrameRate: maxFrameRate,
       },
     },
   };
@@ -37,14 +38,14 @@ let dispx = 0;
 let dispy = 0;
 ipcRenderer.on(
   "update-screen-to-capture",
-  async (event, { display, sourceId }) => {
+  async (event, { display, sourceId, maxFrameRate }) => {
     cons.log(`>> update display: ${display.id}, ${sourceId}`);
     const { x: x, y: y } = display.bounds;
     dispx = x ?? dispx;
     dispy = y ?? dispy;
-    await selectSource(sourceId, display);
+    await selectSource(sourceId, display, maxFrameRate);
     ipcRenderer.send("update-main");
-  }
+  },
 );
 ipcRenderer.on("update-capture-area", (event, pos, dim) => {
   //console.log(pos, dim)

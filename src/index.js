@@ -23,6 +23,9 @@ ipcMain.on("set-ignore-mouse-events", (event, ...args) => {
   BrowserWindow.fromWebContents(event.sender).setIgnoreMouseEvents(...args);
 });
 
+const maxFrameRate = app.commandLine.hasSwitch("maxfps")
+  ? parseInt(app.commandLine.getSwitchValue("maxfps"))
+  : 60;
 const freeze = app.commandLine.hasSwitch("freeze");
 const initCapRect = {
   x: app.commandLine.hasSwitch("cx")
@@ -64,7 +67,6 @@ function checkWindowBounds(win) {
 }
 
 const createWindows = () => {
-
   //
   // create and setup render window
   //
@@ -85,10 +87,7 @@ const createWindows = () => {
 
   // start by setting initial window location starting at (0,0) and change it
   // later, when all other settings have been applied
-  mainWindow.setPosition(
-    0,
-    0,
-  );
+  mainWindow.setPosition(0, 0);
 
   mainWindow.loadFile(path.join(__dirname, "render.html"));
   mainWindow.on("closed", () => app.quit());
@@ -98,10 +97,10 @@ const createWindows = () => {
   mainWindow.on("focus", (event) => mainWindow.send("window-focus"));
   mainWindow.on("blur", (event) => mainWindow.send("window-blur"));
   mainWindow.on("resize", (event) =>
-    mainWindow.send("window-resize", mainWindow.getBounds())
+    mainWindow.send("window-resize", mainWindow.getBounds()),
   );
   mainWindow.on("move", (event) =>
-    mainWindow.send("window-move", mainWindow.getBounds())
+    mainWindow.send("window-move", mainWindow.getBounds()),
   );
   mainWindow.send("window-resize", mainWindow.getBounds());
   mainWindow.send("window-move", mainWindow.getBounds());
@@ -112,13 +111,12 @@ const createWindows = () => {
   // aversity about negative window coordinates
   mainWindow.setPosition(
     initRenderRect.x ?? mainWindow.getPosition()[0],
-    initRenderRect.y ?? mainWindow.getPosition()[1]
+    initRenderRect.y ?? mainWindow.getPosition()[1],
   );
-
 
   //
   // create and setup capture window
-  // 
+  //
 
   const captureWindow = new BrowserWindow({
     webPreferences: {
@@ -135,10 +133,7 @@ const createWindows = () => {
 
   // start by setting initial window location starting at (0,0) and change it
   // later, when all other settings have been applied
-  captureWindow.setPosition(
-    0,
-    0,
-  );
+  captureWindow.setPosition(0, 0);
 
   captureWindow.loadFile(path.join(__dirname, "capture.html"));
   captureWindow.setContentProtection(true); // exclude from capture
@@ -153,7 +148,7 @@ const createWindows = () => {
   // coordinates
   captureWindow.setPosition(
     initCapRect.x ?? captureWindow.getPosition()[0],
-    initCapRect.y ?? captureWindow.getPosition()[1]
+    initCapRect.y ?? captureWindow.getPosition()[1],
   );
 
   captureWindow.on("resized", (event) => {
@@ -166,7 +161,7 @@ const createWindows = () => {
     determineScreenToCapture();
   });
   captureWindow.on("resize", (event) =>
-    updateMain(null, captureWindow.getSize())
+    updateMain(null, captureWindow.getSize()),
   );
   let moveTimer = undefined;
   captureWindow.on("move", (event) => {
@@ -191,10 +186,13 @@ const createWindows = () => {
     if (display?.toString() !== currentDisplay?.id.toString()) {
       currentDisplay = display;
       const sourceId = await getVideoSourceIdForDisplay(display);
-      mainWindow.send("update-screen-to-capture", { display, sourceId });
+      mainWindow.send("update-screen-to-capture", {
+        display,
+        sourceId,
+        maxFrameRate,
+      });
     }
   }
-
 
   async function getVideoSourceIdForDisplay(display) {
     const inputSources = await desktopCapturer.getSources({
@@ -203,14 +201,14 @@ const createWindows = () => {
 
     cons.log(
       `find display ${display.id.toString()} @ ${JSON.stringify(
-        display.bounds
-      )}`
+        display.bounds,
+      )}`,
     );
     inputSources.map((is) =>
-      cons.log(`  ${is.id}, ${is.name}: ${is.display_id}`)
+      cons.log(`  ${is.id}, ${is.name}: ${is.display_id}`),
     );
     let source = inputSources.find(
-      (is) => is.display_id === display.id.toString()
+      (is) => is.display_id === display.id.toString(),
     );
     if (!source) {
       // the display_id property doesn't match up - time for plan B
@@ -221,14 +219,15 @@ const createWindows = () => {
       const sourceName = `Screen ${displayIndex + 1}`;
       cons.log(
         "display_id didn't match; Plan B: looking for input source named",
-        sourceName
+        sourceName,
       );
       source = inputSources.find((is) => is.name === sourceName);
     }
     if (!source) {
       throw new Error(
-        `Cannot find source matching display ${display.id
-        }. Candidates: ${JSON.stringify(inputSources, null, 2)}`
+        `Cannot find source matching display ${
+          display.id
+        }. Candidates: ${JSON.stringify(inputSources, null, 2)}`,
       );
     }
 
