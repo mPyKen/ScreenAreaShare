@@ -64,7 +64,11 @@ function checkWindowBounds(win) {
 }
 
 const createWindows = () => {
-  // Create the browser window.
+
+  //
+  // create and setup render window
+  //
+
   const mainWindow = new BrowserWindow({
     webPreferences: {
       nodeIntegration: true,
@@ -72,16 +76,20 @@ const createWindows = () => {
       enableRemoteModule: true,
       backgroundThrottling: false, // continue playing <video> element https://stackoverflow.com/a/68685080
     },
-    width: initCapRect.width,
-    height: initCapRect.height,
+    width: initRenderRect.width,
+    height: initRenderRect.height,
     frame: false,
     autoHideMenuBar: true,
     resizable: false,
   });
+
+  // start by setting initial window location starting at (0,0) and change it
+  // later, when all other settings have been applied
   mainWindow.setPosition(
-    initRenderRect.x ?? mainWindow.getPosition()[0],
-    initRenderRect.y ?? mainWindow.getPosition()[1]
+    0,
+    0,
   );
+
   mainWindow.loadFile(path.join(__dirname, "render.html"));
   mainWindow.on("closed", () => app.quit());
   //mainWindow.setMenuBarVisibility(false)
@@ -99,7 +107,19 @@ const createWindows = () => {
   mainWindow.send("window-move", mainWindow.getBounds());
   mainWindow.on("moved", (event) => checkWindowBounds(mainWindow));
 
-  // capture window
+  // now, set the "real" location of the render window after all other
+  // settings have been done. hopefully, this eliminates electron's
+  // aversity about negative window coordinates
+  mainWindow.setPosition(
+    initRenderRect.x ?? mainWindow.getPosition()[0],
+    initRenderRect.y ?? mainWindow.getPosition()[1]
+  );
+
+
+  //
+  // create and setup capture window
+  // 
+
   const captureWindow = new BrowserWindow({
     webPreferences: {
       nodeIntegration: true,
@@ -112,10 +132,14 @@ const createWindows = () => {
     frame: false,
     opacity: freeze ? 0 : 0.6,
   });
+
+  // start by setting initial window location starting at (0,0) and change it
+  // later, when all other settings have been applied
   captureWindow.setPosition(
-    initCapRect.x ?? captureWindow.getPosition()[0],
-    initCapRect.y ?? captureWindow.getPosition()[1]
+    0,
+    0,
   );
+
   captureWindow.loadFile(path.join(__dirname, "capture.html"));
   captureWindow.setContentProtection(true); // exclude from capture
   captureWindow.setAlwaysOnTop(true);
@@ -123,6 +147,14 @@ const createWindows = () => {
   captureWindow.on("closed", () => app.quit());
   captureWindow.setIgnoreMouseEvents(freeze);
   //captureWindow.webContents.openDevTools();
+
+  // now, set the "real" location after all other settings have been done.
+  // hopefully, this eliminates electron's aversity about negative window
+  // coordinates
+  captureWindow.setPosition(
+    initCapRect.x ?? captureWindow.getPosition()[0],
+    initCapRect.y ?? captureWindow.getPosition()[1]
+  );
 
   captureWindow.on("resized", (event) => {
     checkWindowBounds(mainWindow);
@@ -162,6 +194,7 @@ const createWindows = () => {
       mainWindow.send("update-screen-to-capture", { display, sourceId });
     }
   }
+
 
   async function getVideoSourceIdForDisplay(display) {
     const inputSources = await desktopCapturer.getSources({
