@@ -2,48 +2,48 @@ name: Build
 on:
   push:
     branches:
-    - master
+      - master
   pull_request:
     branches:
-    - master
+      - master
 
 jobs:
   build_on_linux:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
-    - uses: actions/setup-node@master
-      with:
-        node-version: 18
-    - name: install dependencies
-      run: npm ci
-    - name: build
-      run: npm run make
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@master
+        with:
+          node-version: 18
+      - name: install dependencies
+        run: npm ci
+      - name: build
+        run: npm run make
 
   build_on_mac:
     runs-on: macos-latest
     steps:
-    - uses: actions/checkout@v2
-    - uses: actions/setup-node@master
-      with:
-        node-version: 18
-    # install python 3.11 as in https://github.com/electron/forge/issues/3371
-    - uses: actions/setup-python@v5
-      with:
-        python-version: '3.11'
-    - name: install dependencies
-      run: npm ci
-    - name: build
-      run: npm run make
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@master
+        with:
+          node-version: 18
+      # install python 3.11 as in https://github.com/electron/forge/issues/3371
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: install dependencies
+        run: npm ci
+      - name: build
+        run: npm run make -- --arch=universal
 
   build_on_win:
     runs-on: windows-latest
     steps:
-    - uses: actions/checkout@v2
-    - uses: actions/setup-node@master
-      with:
-        node-version: 18
-    - name: install dependencies
-      run: npm ci
-    - name: build
-      run: npm run make
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@master
+        with:
+          node-version: 18
+      - name: install dependencies
+        run: npm ci
+      - name: build
+        run: npm run make
