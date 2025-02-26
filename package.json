@@ -1,7 +1,7 @@
 {
   "name": "screen-area-share",
   "productName": "screen-area-share",
-  "version": "1.4.1",
+  "version": "1.4.2",
   "description": "Share part of your screen on e.g. Teams",
   "author": {
     "name": "github.com/mPyKen"
@@ -21,16 +21,15 @@
     "electron-squirrel-startup": "^1.0.0"
   },
   "devDependencies": {
-    "nan": "^2.18.0",
-    "@electron-forge/cli": "7.2.0",
-    "@electron-forge/maker-deb": "7.2.0",
-    "@electron-forge/maker-dmg": "7.2.0",
-    "@electron-forge/maker-rpm": "7.2.0",
-    "@electron-forge/maker-squirrel": "7.2.0",
-    "@electron-forge/maker-zip": "7.2.0",
-    "@electron-forge/publisher-github": "7.2.0",
-    "electron": "^28.2.0",
-    "electron-builder": "^24.9.1"
+    "@electron-forge/cli": "^7.7.0",
+    "@electron-forge/maker-deb": "^7.7.0",
+    "@electron-forge/maker-dmg": "^7.7.0",
+    "@electron-forge/maker-rpm": "^7.7.0",
+    "@electron-forge/maker-squirrel": "^7.7.0",
+    "@electron-forge/maker-zip": "^7.7.0",
+    "@electron-forge/publisher-github": "^7.7.0",
+    "electron": "^34.2.0",
+    "electron-builder": "^25.1.8"
   },
   "config": {
     "forge": {
